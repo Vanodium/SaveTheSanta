@@ -1,4 +1,4 @@
-import pygame   
+import pygame
 import sys
 import os
 
@@ -17,38 +17,20 @@ def waiting_click():
     # фунция нужна чтобы отображать одну картинку, пока не будет нажата кнопка мыши
     while True:
         for event in pygame.event.get():
+            global levelname
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                levelname = 'level.txt'
                 return
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+                levelname = 'level1.txt'
+                return
+            elif event.type == pygame.KEYDOWN:
+                if pygame.K_ESCAPE:
+                    terminate()
         pygame.display.flip()
         clock.tick(FPS)
-
-
-def start_screen():
-    # включаем музыку и отображаем заставку, пока не будет нажата кнопка мыши
-    #pygame.mixer.music.load("Save the Santa\data\sounds\menu.mp3")
-    #pygame.mixer.music.play(-1, 0, 500)
-    show_image('start_image.png')
-    waiting_click()
-
-
-def lose_screen(jumps):
-    #pygame.mixer.music.load("Save the Santa\data\sounds\lose.mp3")
-    #pygame.mixer.music.play(-1, 0, 500)
-    print(jumps)
-    show_image('lose_image.png')
-    waiting_click()
-    main_game()
-
-
-def win_screen(jumps):
-    #pygame.mixer.music.load("Save the Santa\data\sounds\win.mp3")
-    #pygame.mixer.music.play(-1, 0, 500)
-    print(jumps)
-    show_image('win_image.png')
-    waiting_click()
-    main_game()
 
 
 def load_image(name):
@@ -58,8 +40,8 @@ def load_image(name):
 
 
 def main_game():
-    #pygame.mixer.music.load("data\sounds\main.mp3")
-    #pygame.mixer.music.play(-1, 0, 1000)
+    pygame.mixer.music.load("Save the Santa\data\sounds\main.mp3")
+    pygame.mixer.music.play(-1, 0, 1000)
 
     clock = pygame.time.Clock()
 
@@ -70,10 +52,11 @@ def main_game():
     playerx, playery = 200, 550
     player = Player(playerx, playery)
     # пока никуда не двигаемся
-    left = right = up = False
+    left = right = False
+
     # создаём камеру
     camera = Camera()
-
+    
     running = True
     while running:
         # группа с летающими платформами
@@ -82,15 +65,21 @@ def main_game():
         all_sprites = pygame.sprite.Group()
         all_sprites.add(player)
         # генерируем фон
-        generate_background(load_image('level background.png'), (0, 0))
+        background_y = camera.apply_background() - 728
+        generate_background(load_image('level background.png'), (0, background_y))
+        
         # генерируем уровень, который грузим из текстового файла
-        generate_level(load_level('level.txt'))
+        generate_level(load_level(levelname))
         
         # изменяем ракурс камеры
         camera.update(player)
+        
         # обновляем положение всех спрайтов
         for sprite in platforms:
             camera.apply(sprite)
+            sprite.image.set_alpha(225)
+
+        player.image.set_alpha(225)
 
         # в зависимости от нажатых кнопок будем изменять положение игрока
         for event in pygame.event.get():
@@ -103,6 +92,8 @@ def main_game():
                 elif pygame.key.get_pressed()[pygame.K_RIGHT]:
                     right = True
                     left = False
+                elif pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                    screens.pause_screen()
             elif event.type == pygame.KEYUP:
                 left = right = False
 
@@ -112,6 +103,14 @@ def main_game():
         all_sprites.draw(screen)
         clock.tick(FPS)
         pygame.display.flip()
+
+
+def show_jumps(jumps, color):
+    font = pygame.font.SysFont("8-BIT WONDER.TTF", 30)
+    jumps_text = "you've made " + str(jumps) + " jumps"
+    text = font.render(jumps_text, True, color)
+    coords = (215, 75)
+    screen.blit(text, coords)
 
 
 def generate_background(background, coords):
@@ -137,6 +136,53 @@ def generate_level(level):
             elif level[y][x] == 'c':
                 coins.add(Tile('c', x, y))
                 all_sprites.add(Tile('c', x, y))
+
+
+class Screens:
+    def start_screen(self):
+        # включаем музыку и отображаем заставку, пока не будет нажата кнопка мыши
+        pygame.mixer.music.load("Save the Santa\data\sounds\menu.mp3")
+        pygame.mixer.music.play(-1, 0, 1500)
+        show_image('start_image.png')
+        waiting_click()
+
+    def lose_screen(self, jumps):
+        pygame.mixer.music.load("Save the Santa\data\sounds\lose.mp3")
+        pygame.mixer.music.play(1, 0, 1500)
+        
+        show_image('lose_image.png')
+        show_jumps(jumps, 'white')
+        waiting_click()
+        main_game()
+        
+    def win_screen(self, jumps):
+        pygame.mixer.Sound("Save The Santa\data\sounds\coin.mp3").play()
+        pygame.mixer.music.load("Save the Santa\data\sounds\win.mp3")
+        pygame.mixer.music.play(-1, 0, 2500)
+        show_image('win_image.png')
+        show_jumps(jumps, 'black')
+        waiting_click()
+        main_game()
+
+    def pause_screen(self):
+        # картинка с текстом, которая отображается при нажатии Esc (пауза)
+        show_image('level background.png')
+        font = pygame.font.SysFont("8-BIT WONDER.TTF", 30)
+        
+        text = font.render("Press Esc to exit", True, 'white')
+        exit_coords = (235, 75)
+        screen.blit(text, exit_coords)
+        
+        if levelname == 'level.txt':
+            txt = "Press LMB to resume"
+        else:
+            txt = "Press RMB to resume"
+
+        text = font.render(txt, True, 'white')
+        resume_coords = (217, 100)
+        screen.blit(text, resume_coords)
+
+        waiting_click()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -180,10 +226,13 @@ class Camera:
     def apply(self, object):
         object.rect.y += self.dy
     
+    def apply_background(self):
+        return self.dy# // 2
+    
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2 - 64)
-        
+        self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 4 - 128)
+    
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
@@ -191,8 +240,12 @@ class Player(pygame.sprite.Sprite):
         # ускорение персонажа = 0
         self.vx = 0
         self.vy = 0
-        
-        self.image = load_image('santa.png')
+
+        # переменная нужна чтобы отображать отзеркаленную картинку при движении в противоположном направлении
+        self.direction = 'right'
+
+        if self.direction == 'right':
+            self.image = load_image('santa.png')
         self.rect = self.image.get_rect()
 
         self.rect.x += pos_x
@@ -208,8 +261,14 @@ class Player(pygame.sprite.Sprite):
         # перемещение по x
         if left is True:
             self.vx -= 1
+            if self.direction != 'left':
+                self.direction = 'left'
+                self.image = pygame.transform.flip(self.image, True, False)
         elif right is True:
             self.vx += 1
+            self.direction = 'right'
+            self.image = load_image('santa.png')   
+            
         # остановка по x
         if not left and not right:
             if self.vx > 4:
@@ -219,15 +278,12 @@ class Player(pygame.sprite.Sprite):
 
         # ускорение свободного падения
         self.vy += 1.5
-
         # такую большую скорость можно набрать только упав, тогда мы проиграли
         if self.vy > 50:
-            lose_screen(self.jumps)
-
+            screens.lose_screen(self.jumps)
         # обновляем координаты
         self.rect.y += self.vy
         self.rect.x += self.vx
-        
         # при выходе за рамки экрана появляемся с другой стороны
         if self.rect.x > 640:
             self.rect.x -= 630
@@ -244,11 +300,12 @@ class Player(pygame.sprite.Sprite):
                         self.vy = -20
                         # был совершен прыжок
                         self.jumps += 1
+                        pygame.mixer.Sound("Save The Santa\data\sounds\jump.mp3").play()
     
     def check_win(self, items):
         for item in items:
             if pygame.sprite.collide_rect(self, item):
-                win_screen(self.jumps)
+                screens.win_screen(self.jumps)
 
 
 if __name__ == '__main__':
@@ -258,6 +315,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     FPS = 60
-    start_screen()
+    screens = Screens()
+    screens.start_screen()
     main_game()   
     pygame.quit()
