@@ -34,13 +34,13 @@ def waiting_click():
 
 
 def load_image(name):
-    fullname = os.path.join('Save the Santa', 'data', 'images', name)
+    fullname = os.path.join('data', 'images', name)
     image = pygame.image.load(fullname)
     return image
 
 
 def main_game():
-    pygame.mixer.music.load("Save the Santa\data\sounds\main.mp3")
+    pygame.mixer.music.load("data\sounds\main.mp3")
     pygame.mixer.music.play(-1, 0, 1000)
 
     clock = pygame.time.Clock()
@@ -119,7 +119,7 @@ def generate_background(background, coords):
 
 
 def load_level(filename):
-    filename = "Save the Santa/data/" + filename
+    filename = "data/" + filename
     with open(filename, 'r') as mapFile:
         level_map = [line.strip() for line in mapFile]
     max_width = max(map(len, level_map))
@@ -141,13 +141,13 @@ def generate_level(level):
 class Screens:
     def start_screen(self):
         # включаем музыку и отображаем заставку, пока не будет нажата кнопка мыши
-        pygame.mixer.music.load("Save the Santa\data\sounds\menu.mp3")
+        pygame.mixer.music.load("data\sounds\menu.mp3")
         pygame.mixer.music.play(-1, 0, 1500)
         show_image('start_image.png')
         waiting_click()
 
     def lose_screen(self, jumps):
-        pygame.mixer.music.load("Save the Santa\data\sounds\lose.mp3")
+        pygame.mixer.music.load("data\sounds\lose.mp3")
         pygame.mixer.music.play(1, 0, 1500)
         
         show_image('lose_image.png')
@@ -156,8 +156,8 @@ class Screens:
         main_game()
         
     def win_screen(self, jumps):
-        pygame.mixer.Sound("Save The Santa\data\sounds\coin.mp3").play()
-        pygame.mixer.music.load("Save the Santa\data\sounds\win.mp3")
+        pygame.mixer.Sound("data\sounds\coin.mp3").play()
+        pygame.mixer.music.load("data\sounds\win.mp3")
         pygame.mixer.music.play(-1, 0, 2500)
         show_image('win_image.png')
         show_jumps(jumps, 'black')
@@ -300,7 +300,7 @@ class Player(pygame.sprite.Sprite):
                         self.vy = -20
                         # был совершен прыжок
                         self.jumps += 1
-                        pygame.mixer.Sound("Save The Santa\data\sounds\jump.mp3").play()
+                        pygame.mixer.Sound("data\sounds\jump.mp3").play()
     
     def check_win(self, items):
         for item in items:
