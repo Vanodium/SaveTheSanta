@@ -1,0 +1,8 @@
+{
+    "title": "SaveTheSanta",
+    "width": 640,
+    "height": 960,
+    "fps": 30,
+    "tile_levels": 12,
+    "tile_levels_visible": 9
+}
