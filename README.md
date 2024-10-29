@@ -10,9 +10,9 @@ You can install pygame with:
 To launch, run main.py
 
 ## Gameplay
-**LMB**      load 1 level
+**1**      load 1 level
 
-**RMB**      load 2 level
+**2**      load 2 level
 
 **Esc**      Pause screen(press again to leave)
 
