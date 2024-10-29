@@ -310,7 +310,7 @@ class Player(pygame.sprite.Sprite):
 
 if __name__ == '__main__':
     pygame.init()
-    pygame.display.set_caption('Save the Santa')
+    pygame.display.set_caption('SaveTheSanta')
     size = WIDTH, HEIGHT = 640, 960
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
